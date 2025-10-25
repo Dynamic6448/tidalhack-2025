@@ -1,7 +1,7 @@
 // components/Layout.tsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Plane, AlertTriangle, Upload, Menu, X } from 'lucide-react';
+import {Plane, AlertTriangle, Upload, Menu, X } from 'lucide-react';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -12,7 +12,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const navItems = [
-        { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/aircraft', icon: Plane, label: 'Aircraft' },
         { path: '/anomalies', icon: AlertTriangle, label: 'Anomalies' },
         { path: '/upload', icon: Upload, label: 'Upload' },
