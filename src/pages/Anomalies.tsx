@@ -1,148 +1,88 @@
 // pages/Anomalies.tsx
 import React, { useState } from 'react';
-import { Download, Search, FileText, Send } from 'lucide-react';
-import { Pie, Bar } from 'react-chartjs-2';
-import type { Anomaly } from '../types';
+import { Search, Download, FileText, Send } from 'lucide-react';
+
+interface Anomaly {
+    id: string;
+    aircraftId: string;
+    system: string;
+    severity: 'high' | 'medium' | 'low';
+    description: string;
+    timestamp: string;
+}
 
 const Anomalies: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [severityFilter, setSeverityFilter] = useState<string>('all');
-    const [systemFilter, setSystemFilter] = useState<string>('all');
-
-    const anomalies: Anomaly[] = [
+    const [severityFilter, setSeverityFilter] = useState('all');
+    const [systemFilter, setSystemFilter] = useState('all');
+    
+    // Sample data - replace with actual data from your backend
+    const [anomalies] = useState<Anomaly[]>([
         {
-            id: 'AN001',
-            aircraft: 'AC001',
-            component: 'Engine 1',
-            timestamp: '2024-01-20 14:32:15',
-            severity: 'medium',
-            score: 72,
-            description: 'Exhaust Gas Temperature trending 15% above normal operating range',
-            recommendation: 'Schedule combustion chamber inspection within next 100 flight hours',
-        },
-        {
-            id: 'AN002',
-            aircraft: 'AC003',
-            component: 'Hydraulic System A',
-            timestamp: '2024-01-20 12:18:42',
+            id: '1',
+            aircraftId: 'AC001',
+            system: 'engine',
             severity: 'high',
-            score: 68,
-            description: 'Pressure drop of 12% detected in primary hydraulic circuit',
-            recommendation: 'Immediate ground inspection required. Check for leaks and seal integrity',
+            description: 'Unusual engine vibration detected',
+            timestamp: '2025-10-25T10:30:00'
         },
         {
-            id: 'AN003',
-            aircraft: 'AC002',
-            component: 'Fuel Flow Sensor',
-            timestamp: '2024-01-20 09:45:33',
-            severity: 'low',
-            score: 85,
-            description: 'Minor fluctuation in fuel flow readings during cruise phase',
-            recommendation: 'Monitor for next 3 flights. Consider sensor calibration if persists',
-        },
-        {
-            id: 'AN004',
-            aircraft: 'AC001',
-            component: 'Engine Vibration',
-            timestamp: '2024-01-19 16:22:11',
+            id: '2',
+            aircraftId: 'AC002',
+            system: 'fuel',
             severity: 'medium',
-            score: 75,
-            description: 'Vibration levels increased by 8% in N1 fan section',
-            recommendation: 'Perform borescope inspection of fan blades at next maintenance',
+            description: 'Fuel leak detected',
+            timestamp: '2025-10-26T11:00:00'
         },
         {
-            id: 'AN005',
-            aircraft: 'AC005',
-            component: 'Electrical Bus',
-            timestamp: '2024-01-19 11:15:28',
+            id: '3',
+            aircraftId: 'AC003',
+            system: 'hydraulic',
             severity: 'low',
-            score: 88,
-            description: 'Voltage fluctuation within acceptable limits but trending',
-            recommendation: 'Continue monitoring. Review electrical load distribution',
+            description: 'Hydraulic fluid level low',
+            timestamp: '2025-10-27T12:00:00'
         },
-    ];
+        {
+            id: '4',
+            aircraftId: 'AC004',
+            system: 'engine',
+            severity: 'high',
+            description: 'Engine overheat warning',
+            timestamp: '2025-10-28T13:00:00'
+        },
+        {
+            id: '5',
+            aircraftId: 'AC005',
+            system: 'electrical',
+            severity: 'medium',
+            description: 'Battery voltage irregularity',
+            timestamp: '2025-10-29T14:00:00'
+        },
+    ]);
 
-    const filteredAnomalies = anomalies.filter((anomaly) => {
-        const matchesSearch =
-            anomaly.aircraft.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            anomaly.component.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // Filter anomalies based on search and filters
+    const filteredAnomalies = anomalies.filter(anomaly => {
+        const matchesSearch = searchTerm === '' ||
+            anomaly.aircraftId.toLowerCase().includes(searchTerm.toLowerCase()) ||
             anomaly.description.toLowerCase().includes(searchTerm.toLowerCase());
+        
         const matchesSeverity = severityFilter === 'all' || anomaly.severity === severityFilter;
-        const matchesSystem =
-            systemFilter === 'all' || anomaly.component.toLowerCase().includes(systemFilter.toLowerCase());
+        const matchesSystem = systemFilter === 'all' || anomaly.system === systemFilter;
+
         return matchesSearch && matchesSeverity && matchesSystem;
     });
 
-    const severityDistribution = {
-        labels: ['High', 'Medium', 'Low'],
-        datasets: [
-            {
-                data: [
-                    anomalies.filter((a) => a.severity === 'high').length,
-                    anomalies.filter((a) => a.severity === 'medium').length,
-                    anomalies.filter((a) => a.severity === 'low').length,
-                ],
-                backgroundColor: ['#ef4444', '#f97316', '#eab308'],
-            },
-        ],
-    };
-
-    const aircraftDistribution = {
-        labels: ['AC001', 'AC002', 'AC003', 'AC004', 'AC005'],
-        datasets: [
-            {
-                label: 'Anomalies',
-                data: [2, 1, 1, 0, 1],
-                backgroundColor: 'rgba(59, 130, 246, 0.8)',
-            },
-        ],
-    };
-
-    const getSeverityColor = (severity: string) => {
-        switch (severity) {
-            case 'high':
-                return 'bg-red-100 text-red-800 border-red-200';
-            case 'medium':
-                return 'bg-orange-100 text-orange-800 border-orange-200';
-            case 'low':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            default:
-                return 'bg-slate-100 text-slate-800 border-slate-200';
-        }
-    };
-
-    const handleExport = (format: 'csv' | 'pdf') => {
-        alert(`Exporting ${filteredAnomalies.length} anomalies as ${format.toUpperCase()}...`);
+    const handleExport = (type: 'csv' | 'pdf') => {
+        alert(`Exporting as ${type}`);
+        // Implement export logic
     };
 
     return (
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-800">Anomaly Detection & Insights</h1>
-                <p className="text-slate-600 mt-1">AI-powered maintenance recommendations</p>
-            </div>
-
-            {/* Analytics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                    <h3 className="text-sm font-medium text-slate-600 mb-4">Severity Distribution</h3>
-                    <Pie
-                        data={severityDistribution}
-                        options={{ responsive: true, plugins: { legend: { position: 'bottom' } } }}
-                    />
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm md:col-span-2">
-                    <h3 className="text-sm font-medium text-slate-600 mb-4">Anomalies by Aircraft</h3>
-                    <Bar
-                        data={aircraftDistribution}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { display: false } },
-                        }}
-                    />
-                </div>
+                <h1 className="text-3xl font-bold text-[#3e4a5b]">Anomalies</h1>
+                <p className="text-[#3e4a5b] mt-1">Track and manage detected anomalies</p>
             </div>
 
             {/* Filters & Search */}
@@ -184,36 +124,6 @@ const Anomalies: React.FC = () => {
                         </select>
                     </div>
                 </div>
-
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-sm text-slate-600">
-                        Showing <span className="font-semibold">{filteredAnomalies.length}</span> of{' '}
-                        <span className="font-semibold">{anomalies.length}</span> anomalies
-                    </p>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={() => handleExport('csv')}
-                            className="flex items-center space-x-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span className="text-sm">CSV</span>
-                        </button>
-                        <button
-                            onClick={() => handleExport('pdf')}
-                            className="flex items-center space-x-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
-                        >
-                            <FileText className="w-4 h-4" />
-                            <span className="text-sm">PDF</span>
-                        </button>
-                        <button
-                            onClick={() => alert('Slack notification sent!')}
-                            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-                        >
-                            <Send className="w-4 h-4" />
-                            <span className="text-sm">Notify</span>
-                        </button>
-                    </div>
-                </div>
             </div>
 
             {/* Anomalies Table */}
@@ -229,16 +139,16 @@ const Anomalies: React.FC = () => {
                                     Aircraft
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Component
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Timestamp
+                                    System
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Severity
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Score
+                                    Description
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                                    Timestamp
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Action
@@ -253,48 +163,42 @@ const Anomalies: React.FC = () => {
                                             {anomaly.id}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                            {anomaly.aircraft}
+                                            {anomaly.aircraftId}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                            {anomaly.component}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                            {anomaly.timestamp}
+                                            {anomaly.system}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
-                                                className={`px-3 py-1 text-xs font-medium rounded-full border ${getSeverityColor(
-                                                    anomaly.severity
-                                                )}`}
+                                                className={`px-3 py-1 text-xs font-medium rounded-full border`}
+                                                style={{
+                                                    borderColor:
+                                                        anomaly.severity === 'high'
+                                                            ? '#ef4444'
+                                                            : anomaly.severity === 'medium'
+                                                            ? '#f97316'
+                                                            : '#eab308',
+                                                    color:
+                                                        anomaly.severity === 'high'
+                                                            ? '#ef4444'
+                                                            : anomaly.severity === 'medium'
+                                                            ? '#f97316'
+                                                            : '#eab308',
+                                                }}
                                             >
                                                 {anomaly.severity.toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-800">
-                                            {anomaly.score}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                                            {anomaly.description}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                            {new Date(anomaly.timestamp).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button className="text-blue-600 hover:text-blue-800 font-medium">
                                                 View Details
                                             </button>
-                                        </td>
-                                    </tr>
-                                    <tr className="bg-slate-50">
-                                        <td colSpan={7} className="px-6 py-4">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <p className="text-xs font-medium text-slate-600 mb-1">
-                                                        Description
-                                                    </p>
-                                                    <p className="text-sm text-slate-800">{anomaly.description}</p>
-                                                </div>
-                                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                                    <p className="text-xs font-medium text-blue-800 mb-1">
-                                                        AI-Generated Recommendation
-                                                    </p>
-                                                    <p className="text-sm text-blue-700">{anomaly.recommendation}</p>
-                                                </div>
-                                            </div>
                                         </td>
                                     </tr>
                                 </React.Fragment>
