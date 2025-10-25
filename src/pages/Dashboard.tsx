@@ -1,6 +1,12 @@
 // pages/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, AlertCircle, CheckCircle, Activity, Gauge } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+    Gauge, 
+    Activity, 
+    AlertCircle, 
+    CheckCircle, 
+    TrendingUp 
+} from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -15,7 +21,7 @@ import {
     Legend,
     Filler,
 } from 'chart.js';
-import type { Anomaly, Telemetry } from '../types';
+import type { Anomaly } from '../types';
 
 ChartJS.register(
     CategoryScale,
@@ -32,15 +38,8 @@ ChartJS.register(
 
 const Dashboard: React.FC = () => {
     const [selectedAircraft, setSelectedAircraft] = useState('AC001');
-    const [telemetry, setTelemetry] = useState<Telemetry>({
-        egt: 650,
-        n1: 85,
-        n2: 92,
-        fuelFlow: 2400,
-        vibration: 0.3,
-    });
 
-    const [anomalies] = useState<Anomaly[]>([
+    const anomalies = [
         {
             id: 'AN001',
             timestamp: '2 mins ago',
@@ -71,22 +70,7 @@ const Dashboard: React.FC = () => {
             description: 'Minor flow irregularity',
             recommendation: '',
         },
-    ]);
-
-    // Simulate real-time telemetry updates
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTelemetry((prev) => ({
-                egt: prev.egt + (Math.random() - 0.5) * 10,
-                n1: prev.n1 + (Math.random() - 0.5) * 2,
-                n2: prev.n2 + (Math.random() - 0.5) * 2,
-                fuelFlow: prev.fuelFlow + (Math.random() - 0.5) * 50,
-                vibration: Math.max(0.1, prev.vibration + (Math.random() - 0.5) * 0.1),
-            }));
-        }, 2000);
-
-        return () => clearInterval(interval);
-    }, []);
+    ];
 
     const fleetStats = {
         total: 12,
@@ -100,8 +84,8 @@ const Dashboard: React.FC = () => {
             {
                 label: 'Health Score',
                 data: [95, 93, 91, 89, 87, 88, 90],
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: '#77c1d4',
+                backgroundColor: 'rgba(119, 193, 212, 0.1)',
                 fill: true,
                 tension: 0.4,
             },
@@ -115,10 +99,10 @@ const Dashboard: React.FC = () => {
                 label: 'Anomalies',
                 data: [8, 5, 3, 4],
                 backgroundColor: [
-                    'rgba(239, 68, 68, 0.8)',
-                    'rgba(251, 146, 60, 0.8)',
-                    'rgba(234, 179, 8, 0.8)',
-                    'rgba(59, 130, 246, 0.8)',
+                    '#150a82',
+                    '#77c1d4',
+                    '#3e4a5b',
+                    '#08033d',
                 ],
             },
         ],
@@ -184,68 +168,68 @@ const Dashboard: React.FC = () => {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-800">Fleet Overview</h1>
-                <p className="text-slate-600 mt-1">Real-time monitoring and anomaly detection</p>
+                <h1 className="text-3xl font-bold text-[#3e4a5b]">Fleet Overview</h1>
+                <p className="text-[#3e4a5b] mt-1">Real-time monitoring and anomaly detection</p>
             </div>
 
             {/* Fleet Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-slate-600 mb-1">Total Aircraft</p>
-                            <p className="text-3xl font-bold text-slate-800">{fleetStats.total}</p>
+                            <p className="text-sm text-[#3e4a5b] mb-1">Total Aircraft</p>
+                            <p className="text-3xl font-bold text-[#150a82]">{fleetStats.total}</p>
                         </div>
-                        <div className="bg-blue-100 p-3 rounded-lg">
-                            <Activity className="w-8 h-8 text-blue-600" />
+                        <div className="bg-[#ced1e8] p-3 rounded-lg">
+                            <Activity className="w-8 h-8 text-[#150a82]" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-slate-600 mb-1">With Anomalies</p>
-                            <p className="text-3xl font-bold text-orange-600">{fleetStats.withAnomalies}</p>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-sm text-[#3e4a5b] mb-1">With Anomalies</p>
+                            <p className="text-3xl font-bold text-[#150a82]">{fleetStats.withAnomalies}</p>
+                            <p className="text-xs text-[#3e4a5b] mt-1">
                                 {((fleetStats.withAnomalies / fleetStats.total) * 100).toFixed(0)}% of fleet
                             </p>
                         </div>
-                        <div className="bg-orange-100 p-3 rounded-lg">
-                            <AlertCircle className="w-8 h-8 text-orange-600" />
+                        <div className="bg-[#ced1e8] p-3 rounded-lg">
+                            <AlertCircle className="w-8 h-8 text-[#150a82]" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-slate-600 mb-1">Avg Health Score</p>
-                            <p className="text-3xl font-bold text-green-600">{fleetStats.healthScore}%</p>
+                            <p className="text-sm text-[#3e4a5b] mb-1">Avg Health Score</p>
+                            <p className="text-3xl font-bold text-[#150a82]">{fleetStats.healthScore}%</p>
                             <div className="flex items-center mt-1">
-                                <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
-                                <p className="text-xs text-green-600">+2.3% from last week</p>
+                                <TrendingUp className="w-4 h-4 text-[#77c1d4] mr-1" />
+                                <p className="text-xs text-[#77c1d4]">+2.3% from last week</p>
                             </div>
                         </div>
-                        <div className="bg-green-100 p-3 rounded-lg">
-                            <CheckCircle className="w-8 h-8 text-green-600" />
+                        <div className="bg-[#ced1e8] p-3 rounded-lg">
+                            <CheckCircle className="w-8 h-8 text-[#150a82]" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Aircraft Selection & Live Telemetry */}
+            {/* Main Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                     {/* Aircraft Selector */}
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                        <label className="block text-sm font-medium text-slate-700 mb-3">
-                            Select Aircraft for Live Telemetry
+                    <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                        <label className="block text-sm font-medium text-[#3e4a5b] mb-3">
+                            Select Aircraft
                         </label>
                         <select
                             value={selectedAircraft}
                             onChange={(e) => setSelectedAircraft(e.target.value)}
-                            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-[#ced1e8] rounded-lg focus:ring-2 focus:ring-[#150a82] focus:border-transparent bg-white text-[#3e4a5b]"
                         >
                             <option value="AC001">AC001 - Boeing 737-800</option>
                             <option value="AC002">AC002 - Airbus A320</option>
@@ -253,40 +237,10 @@ const Dashboard: React.FC = () => {
                         </select>
                     </div>
 
-                    {/* Live Telemetry Gauges */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <GaugeCard label="EGT" value={telemetry.egt} unit="°C" max={900} color="text-orange-600" />
-                        <GaugeCard label="N1 Speed" value={telemetry.n1} unit="%" max={100} color="text-blue-600" />
-                        <GaugeCard label="N2 Speed" value={telemetry.n2} unit="%" max={100} color="text-blue-600" />
-                        <GaugeCard
-                            label="Fuel Flow"
-                            value={telemetry.fuelFlow}
-                            unit="kg/h"
-                            max={3000}
-                            color="text-green-600"
-                        />
-                        <GaugeCard
-                            label="Vibration"
-                            value={telemetry.vibration}
-                            unit="g"
-                            max={1}
-                            color="text-purple-600"
-                        />
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 shadow-sm flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="animate-pulse">
-                                    <Activity className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                                </div>
-                                <p className="text-sm font-medium text-blue-800">Live Updates</p>
-                                <p className="text-xs text-blue-600">Every 2s</p>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Charts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <h3 className="text-lg font-semibold text-slate-800 mb-4">Engine Health Trend</h3>
+                        <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                            <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Engine Health Trend</h3>
                             <Line
                                 data={engineHealthData}
                                 options={{
@@ -301,8 +255,8 @@ const Dashboard: React.FC = () => {
                             />
                         </div>
 
-                        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                            <h3 className="text-lg font-semibold text-slate-800 mb-4">Anomalies by System</h3>
+                        <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                            <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Anomalies by System</h3>
                             <Bar
                                 data={anomalyBySystemData}
                                 options={{
@@ -318,11 +272,11 @@ const Dashboard: React.FC = () => {
 
                 {/* Recent Anomalies Feed */}
                 <div className="space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                        <div className="p-6 border-b border-slate-200">
-                            <h3 className="text-lg font-semibold text-slate-800">Recent Anomalies</h3>
+                    <div className="bg-[#f0f1ff] rounded-xl border border-[#ced1e8] shadow-sm">
+                        <div className="p-6 border-b border-[#ced1e8]">
+                            <h3 className="text-lg font-semibold text-[#3e4a5b]">Recent Anomalies</h3>
                         </div>
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-[#ced1e8]">
                             {anomalies.map((anomaly) => (
                                 <div key={anomaly.id} className="p-4 hover:bg-slate-50 cursor-pointer transition">
                                     <div className="flex items-start justify-between mb-2">
@@ -345,8 +299,8 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Severity Distribution */}
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-4">Severity Distribution</h3>
+                    <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                        <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Severity Distribution</h3>
                         <Doughnut
                             data={severityData}
                             options={{
