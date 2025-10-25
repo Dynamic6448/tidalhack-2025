@@ -241,31 +241,62 @@ const Dashboard: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                             <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Engine Health Trend</h3>
-                            <Line
-                                data={engineHealthData}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: { display: false },
-                                    },
-                                    scales: {
-                                        y: { beginAtZero: false, min: 80, max: 100 },
-                                    },
-                                }}
-                            />
+                            <div className="h-[240px]"> {/* Add fixed height container */}
+                                <Line
+                                    data={engineHealthData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        plugins: {
+                                            legend: { display: false },
+                                        },
+                                        scales: {
+                                            y: { 
+                                                beginAtZero: false, 
+                                                min: 80, 
+                                                max: 100,
+                                                grid: {
+                                                    color: '#ced1e8'
+                                                }
+                                            },
+                                            x: {
+                                                grid: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                             <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Anomalies by System</h3>
-                            <Bar
-                                data={anomalyBySystemData}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: { display: false },
-                                    },
-                                }}
-                            />
+                            <div className="h-[240px]"> {/* Add fixed height container */}
+                                <Bar
+                                    data={anomalyBySystemData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        plugins: {
+                                            legend: { display: false },
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                grid: {
+                                                    color: '#ced1e8'
+                                                }
+                                            },
+                                            x: {
+                                                grid: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -301,15 +332,25 @@ const Dashboard: React.FC = () => {
                     {/* Severity Distribution */}
                     <div className="bg-[#f0f1ff] rounded-xl p-6 border border-[#ced1e8] shadow-sm">
                         <h3 className="text-lg font-semibold text-[#3e4a5b] mb-4">Severity Distribution</h3>
-                        <Doughnut
-                            data={severityData}
-                            options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: { position: 'bottom' },
-                                },
-                            }}
-                        />
+                        <div className="h-[200px] w-[200px] mx-auto"> {/* Add fixed size container */}
+                            <Doughnut
+                                data={severityData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    plugins: {
+                                        legend: { 
+                                            position: 'bottom',
+                                            labels: {
+                                                padding: 20,
+                                                usePointStyle: true
+                                            }
+                                        }
+                                    },
+                                    cutout: '65%'
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
