@@ -12,9 +12,6 @@ import { analyzeFlightData } from './gemini'; // Now this will work
 
 console.log('GEMINI KEY LOADED:', !!process.env.GEMINI_API_KEY);
 
-// ... the rest of your index.ts file remains the same
-console.log('GEMINI KEY LOADED:', !!process.env.GEMINI_API_KEY);
-
 admin.initializeApp({
     credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,

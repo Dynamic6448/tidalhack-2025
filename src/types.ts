@@ -31,3 +31,10 @@ export interface UploadHistory {
     records: number;
     status: 'success' | 'processing' | 'failed';
 }
+
+export interface GeminiResponse {
+    summary: string;
+    status: 'Nominal' | 'Caution' | 'Warning';
+    anomalies: string[];
+    recommendations: string[];
+}

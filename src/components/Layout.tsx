@@ -13,7 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const navItems = [
         { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/aircraft/AC001', icon: Plane, label: 'Aircraft' },
+        { path: '/aircraft', icon: Plane, label: 'Aircraft' },
         { path: '/anomalies', icon: AlertTriangle, label: 'Anomalies' },
         { path: '/upload', icon: Upload, label: 'Upload' },
     ];
