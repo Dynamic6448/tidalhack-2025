@@ -69,20 +69,10 @@ router.post('/analyze-flight', async (req, res) => {
         }
 
         // B. The 'analyzeFlightData' function now returns a structured object
-        let analysisResult;
-        try {
-            analysisResult = await analyzeFlightData(flightData);
-        } catch (e) {
-            console.error('Error during AI analysis:', e);
-        }
+        const analysisResult = await analyzeFlightData(flightData);
 
         // C. Save the entire structured analysis object to Firestore
-        let analysisId;
-        try {
-            analysisId = await saveAIAnalysis(flightId, analysisResult);
-        } catch (e) {
-            console.error('Error saving AI analysis to Firestore:', e);
-        }
+        const analysisId = await saveAIAnalysis(flightId, analysisResult);
 
         // D. Return the full analysis object along with its new ID
         res.status(200).json({ analysisId, ...analysisResult });
