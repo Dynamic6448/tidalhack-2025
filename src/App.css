@@ -40,3 +40,30 @@
 .read-the-docs {
     color: #888;
 }
+
+/* Floating button styles for moving buttons */
+.app-root {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.floating-btn {
+    position: absolute;
+    z-index: 40;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: left 600ms cubic-bezier(.22,.9,.37,1), top 600ms cubic-bezier(.22,.9,.37,1), transform 160ms;
+    transform: translateZ(0);
+}
+
+.floating-btn:active {
+    transform: scale(0.98);
+}
+
+/* Ensure the counter stays above moving buttons */
+.fixed-top-counter {
+    z-index: 60;
+}
