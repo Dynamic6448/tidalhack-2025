@@ -1,110 +1,80 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // pages/Aircraft.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Plane, AlertCircle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
-
-interface Aircraft {
-    id: string;
-    type: string;
-    tailNumber: string;
-    totalFlightHours: number;
-    flightCycles: number;
-    lastMaintenance: string;
-    healthScore: number;
-    status: 'normal' | 'caution' | 'critical';
-}
+import type { AircraftType } from '../types';
 
 const Aircraft: React.FC = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
 
-    const [aircraft, setAircraft] = useState<Aircraft[]>([
-        {
-            id: 'AC001',
-            type: 'Boeing 737-800',
-            tailNumber: 'N12345',
-            totalFlightHours: 24567,
-            flightCycles: 18234,
-            lastMaintenance: '2024-01-15',
-            healthScore: 87,
-            status: 'caution',
-        },
-        {
-            id: 'AC002',
-            type: 'Airbus A320',
-            tailNumber: 'N67890',
-            totalFlightHours: 18234,
-            flightCycles: 14567,
-            lastMaintenance: '2024-01-20',
-            healthScore: 94,
-            status: 'normal',
-        },
-        {
-            id: 'AC003',
-            type: 'Boeing 787-9',
-            tailNumber: 'N54321',
-            totalFlightHours: 12456,
-            flightCycles: 8901,
-            lastMaintenance: '2024-01-10',
-            healthScore: 76,
-            status: 'critical',
-        },
-        {
-            id: 'AC004',
-            type: 'Airbus A350',
-            tailNumber: 'N98765',
-            totalFlightHours: 15678,
-            flightCycles: 11234,
-            lastMaintenance: '2024-01-22',
-            healthScore: 91,
-            status: 'normal',
-        },
-    ]);
+    const [aircraft, setAircraft] = useState<AircraftType[]>([]);
+    useEffect(() => {
+        const fetchAircraftIds = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/aircraft');
+                const data = await response.json();
+                return setAircraft(data.aircrafts);
+            } catch (error) {
+                console.error('Error fetching aircraft data:', error);
+            }
+        };
 
-    const [newAircraft, setNewAircraft] = useState({
-        type: '',
-        tailNumber: '',
+        fetchAircraftIds();
+    }, []);
+
+    const [newAircraft, setNewAircraft] = useState<AircraftType>({
+        id: '',
+        registration: '',
+        type: 'Boeing 737-800',
         totalFlightHours: 0,
         flightCycles: 0,
         lastMaintenance: '',
+        skyScore: 100,
+        status: 'normal',
     });
 
     const filteredAircraft = aircraft.filter(
         (ac) =>
-            ac.tailNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ac.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ac.id.toLowerCase().includes(searchTerm.toLowerCase())
+            ac.registration.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            ac.type.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleAddAircraft = () => {
-        if (!newAircraft.type || !newAircraft.tailNumber) {
+    const handleAddAircraft = async () => {
+        if (!newAircraft.type || !newAircraft.registration) {
             alert('Please fill in all required fields');
             return;
         }
 
-        const newId = `AC${String(aircraft.length + 1).padStart(3, '0')}`;
-        const healthScore = Math.floor(Math.random() * 30) + 70; // Random score between 70-100
-        const status: 'normal' | 'caution' | 'critical' =
-            healthScore >= 85 ? 'normal' : healthScore >= 75 ? 'caution' : 'critical';
-
         setAircraft([
             ...aircraft,
             {
-                id: newId,
                 ...newAircraft,
-                healthScore,
-                status,
+                skyScore: 100,
+                status: 'normal',
             },
         ]);
 
+        await fetch('http://localhost:3000/api/aircraft', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newAircraft),
+        });
+
         // Reset form
         setNewAircraft({
-            type: '',
-            tailNumber: '',
+            id: '',
+            registration: '',
+            type: 'Boeing 737-800',
             totalFlightHours: 0,
             flightCycles: 0,
             lastMaintenance: '',
+            skyScore: 100,
+            status: 'normal',
         });
         setShowAddModal(false);
     };
@@ -146,7 +116,7 @@ const Aircraft: React.FC = () => {
         normal: aircraft.filter((ac) => ac.status === 'normal').length,
         caution: aircraft.filter((ac) => ac.status === 'caution').length,
         critical: aircraft.filter((ac) => ac.status === 'critical').length,
-        avgHealthScore: Math.round(aircraft.reduce((sum, ac) => sum + ac.healthScore, 0) / aircraft.length),
+        avgSkyScore: Math.round(aircraft.reduce((sum, ac) => sum + ac.skyScore, 0) / aircraft.length),
     };
 
     return (
@@ -216,14 +186,14 @@ const Aircraft: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow-md border border-slate-200">
+                <div className="bg-white p-3 rounded-lg shadow-md border border-slate-200">
                     <div className="flex items-center gap-3">
                         <div className="bg-purple-100 p-3 rounded-lg">
                             <TrendingUp className="w-6 h-6 text-purple-600" />
                         </div>
                         <div>
-                            <p className="text-slate-600 text-sm">Avg Health</p>
-                            <p className="text-2xl font-bold text-slate-900">{stats.avgHealthScore}%</p>
+                            <p className="text-slate-600 text-sm">Avg. SkyScore</p>
+                            <p className="text-2xl font-bold text-slate-900">{stats.avgSkyScore}%</p>
                         </div>
                     </div>
                 </div>
@@ -268,7 +238,7 @@ const Aircraft: React.FC = () => {
                                     Last Maintenance
                                 </th>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Health
+                                    SkyScore
                                 </th>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Status
@@ -278,21 +248,23 @@ const Aircraft: React.FC = () => {
                         <tbody className="bg-white divide-y divide-slate-200">
                             {filteredAircraft.map((ac) => (
                                 <tr
-                                    key={ac.id}
-                                    onClick={() => navigate(`/aircraft/${ac.id}`)}
+                                    key={ac.registration}
+                                    onClick={() => navigate(`/aircraft/${ac.registration}`)}
                                     className="hover:bg-slate-50 cursor-pointer transition-colors"
                                 >
                                     <td className="px-3 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
                                             <Plane className="w-4 h-4 text-slate-400" />
-                                            <span className="text-sm font-medium text-slate-900">{ac.id}</span>
+                                            <span className="text-sm font-medium text-slate-900">
+                                                {ac.registration}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-3 py-4">
                                         <span className="text-sm text-slate-900">{ac.type}</span>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap">
-                                        <span className="text-sm font-mono text-slate-900">{ac.tailNumber}</span>
+                                        <span className="text-sm font-mono text-slate-900">{ac.registration}</span>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap">
                                         <span className="text-sm text-slate-600">
@@ -311,10 +283,8 @@ const Aircraft: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap">
-                                        <span
-                                            className={`text-sm font-semibold ${getHealthScoreColor(ac.healthScore)}`}
-                                        >
-                                            {ac.healthScore}%
+                                        <span className={`text-sm font-semibold ${getHealthScoreColor(ac.skyScore)}`}>
+                                            {ac.skyScore}%
                                         </span>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap">
@@ -355,13 +325,13 @@ const Aircraft: React.FC = () => {
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
                                         Aircraft Type *
                                     </label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g., Boeing 737-800"
+                                    <select
                                         value={newAircraft.type}
                                         onChange={(e) => setNewAircraft({ ...newAircraft, type: e.target.value })}
                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
+                                    >
+                                        <option value="Boeing 737-800">Boeing 737-800</option>
+                                    </select>
                                 </div>
 
                                 <div>
@@ -371,8 +341,10 @@ const Aircraft: React.FC = () => {
                                     <input
                                         type="text"
                                         placeholder="e.g., N12345"
-                                        value={newAircraft.tailNumber}
-                                        onChange={(e) => setNewAircraft({ ...newAircraft, tailNumber: e.target.value })}
+                                        value={newAircraft.registration}
+                                        onChange={(e) =>
+                                            setNewAircraft({ ...newAircraft, registration: e.target.value })
+                                        }
                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>

@@ -9,6 +9,7 @@ import express from 'express';
 import cors from 'cors';
 import * as admin from 'firebase-admin';
 import { analyzeFlightData } from './gemini'; // Now this will work
+import { AircraftType } from './types';
 
 console.log('GEMINI KEY LOADED:', !!process.env.GEMINI_API_KEY);
 
@@ -28,7 +29,7 @@ async function testFirestore() {
     console.log('✅ Firestore test:', snap.data());
 }
 
-export const addAircraft = async (data: any) => {
+export const addAircraft = async (data: AircraftType) => {
     const ref = await db.collection('aircrafts').add(data);
     return ref.id;
 };
@@ -76,6 +77,40 @@ router.post('/analyze-flight', async (req, res) => {
     } catch (err) {
         console.error('Error in /analyze-flight route:', err);
         res.status(500).json({ error: 'An unexpected error occurred during AI analysis.' });
+    }
+});
+
+router.get('/aircraft/:id', async (req, res) => {
+    try {
+        const aircraftId = req.params.id;
+        const doc = await db.collection('aircrafts').doc(aircraftId).get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Aircraft not found' });
+        }
+        res.status(200).json(doc.data());
+    } catch (err) {
+        console.error('Error in /aircraft/:id route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching aircraft data.' });
+    }
+});
+router.get('/aircraft', async (req, res) => {
+    try {
+        const snapshot = await db.collection('aircrafts').get();
+        const aircrafts: AircraftType[] = snapshot.docs.map((doc) => doc.data() as AircraftType);
+        res.status(200).json({ aircrafts });
+    } catch (err) {
+        console.error('Error in /aircraft route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching aircraft list.' });
+    }
+});
+router.post('/aircraft', async (req, res) => {
+    try {
+        const aircraftData: AircraftType = req.body;
+        const aircraftId = await addAircraft(aircraftData);
+        res.status(200).json({ id: aircraftId });
+    } catch (err) {
+        console.error('Error in /add-aircraft route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while adding aircraft.' });
     }
 });
 

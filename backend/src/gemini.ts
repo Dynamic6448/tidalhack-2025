@@ -20,7 +20,7 @@ export async function analyzeFlightData(flightData: any) {
 
   Based on the data, provide the following in a JSON format:
   1. "summary": A concise, one-sentence summary of the overall flight status.
-  2. "status": A single keyword: "Nominal", "Caution", or "Warning".
+  2. "status": A single keyword: "normal", "caution", or "critical".
   3. "anomalies": An array of strings containing concise one-sentence descriptions of any detected anomalies. If none, return an empty array.
   4. "recommendations": An array of strings with recommended actions or components to inspect. If none, return an empty array.
 
