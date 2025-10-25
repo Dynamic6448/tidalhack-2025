@@ -7,12 +7,7 @@ export interface ComponentHealth {
 export interface Anomaly {
     id: string;
     aircraft: string;
-    component: string;
-    timestamp: string;
-    severity: 'high' | 'medium' | 'low';
-    score: number;
-    description: string;
-    recommendation: string;
+    response: GeminiResponse;
 }
 
 export interface Telemetry {
@@ -23,20 +18,12 @@ export interface Telemetry {
     vibration: number;
 }
 
-export interface UploadHistory {
-    id: string;
-    filename: string;
-    uploadedBy: string;
-    timestamp: string;
-    records: number;
-    status: 'success' | 'processing' | 'failed';
-}
-
 export interface GeminiResponse {
-    summary: string;
-    status: 'normal' | 'caution' | 'critical';
-    anomalies: string[];
-    recommendations: string[];
+    component: string;
+    severity: 'normal' | 'caution' | 'critical';
+    description: string;
+    recommendation: string;
+    score: number;
 }
 
 export interface AircraftType {

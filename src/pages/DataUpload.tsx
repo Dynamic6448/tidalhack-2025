@@ -2,7 +2,6 @@
 // pages/DataUpload.tsx
 import React, { useState, useEffect } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import type { UploadHistory } from '../types';
 
 const DataUpload: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
@@ -13,32 +12,21 @@ const DataUpload: React.FC = () => {
     const [aircraftIdentifiers, setAircraftRegistrations] = useState<Array<{ id: string; identifier: string }>>([]);
     const [loading, setLoading] = useState(true);
 
-    const [uploadHistory] = useState<UploadHistory[]>([
-        {
-            id: 'UP001',
-            filename: 'telemetry_batch_20240120.csv',
-            uploadedBy: 'admin@aerologiq.com',
-            timestamp: '2024-01-20 14:30:00',
-            records: 15420,
-            status: 'success',
-        },
-        {
-            id: 'UP002',
-            filename: 'flight_data_AC001.json',
-            uploadedBy: 'analyst@aerologiq.com',
-            timestamp: '2024-01-20 09:15:00',
-            records: 8934,
-            status: 'success',
-        },
-        {
-            id: 'UP003',
-            filename: 'sensor_readings.csv',
-            uploadedBy: 'admin@aerologiq.com',
-            timestamp: '2024-01-19 16:45:00',
-            records: 0,
-            status: 'failed',
-        },
-    ]);
+    const [uploadHistory, setUploadHistory] = useState<string[]>([]);
+    useEffect(() => {
+        const fetchUploadHistory = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/upload');
+                if (!response.ok) throw new Error('Failed to fetch upload history');
+                const data = await response.json();
+                setUploadHistory(data.filenames);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchUploadHistory();
+    }, []);
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -93,15 +81,44 @@ const DataUpload: React.FC = () => {
         if (!uploadedFile || !isFormValid()) return;
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', uploadedFile);
-        formData.append('aircraftType', aircraftType);
-        formData.append('aircraftId', aircraftId);
 
         try {
-            // TODO: Replace with actual API endpoint
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            alert(`Successfully uploaded ${uploadedFile.name} for ${aircraftType} (${aircraftId})!`);
+            // Only accept JSON files for this path
+            const isJsonFile =
+                uploadedFile.type === 'application/json' || uploadedFile.name.toLowerCase().endsWith('.json');
+            if (!isJsonFile) throw new Error('Only JSON files are supported');
+
+            // Read file contents and parse as JSON
+            const text = await uploadedFile.text();
+            let parsedJson: any;
+            try {
+                parsedJson = JSON.parse(text);
+            } catch {
+                throw new Error('Invalid JSON file');
+            }
+
+            // Build JSON payload including aircraft info and file contents
+            const payload = {
+                aircraftType,
+                aircraftId,
+                data: parsedJson,
+            };
+
+            // Send JSON payload
+            const res = await fetch('http://localhost:3000/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: uploadedFile.name, registration: aircraftId, flightData: payload }),
+            });
+
+            if (!res.ok) {
+                throw new Error('Upload failed');
+            }
+
+            setUploadHistory((prev) => [uploadedFile.name, ...prev]);
+
             setUploadedFile(null);
             setAircraftId('');
         } catch {
@@ -121,19 +138,6 @@ const DataUpload: React.FC = () => {
                 return <AlertCircle className="w-5 h-5 text-red-600" />;
             default:
                 return null;
-        }
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'success':
-                return 'bg-green-100 text-green-800';
-            case 'processing':
-                return 'bg-blue-100 text-blue-800';
-            case 'failed':
-                return 'bg-red-100 text-red-800';
-            default:
-                return 'bg-slate-100 text-slate-800';
         }
     };
 
@@ -202,9 +206,9 @@ const DataUpload: React.FC = () => {
                             <p className="text-slate-700 font-medium mb-2">
                                 {uploadedFile ? uploadedFile.name : 'Drag and drop your file here'}
                             </p>
-                            <p className="text-sm text-slate-500 mb-4">Supports CSV, JSON</p>
+                            <p className="text-sm text-slate-500 mb-4">Supports JSON only</p>
                             <label className="inline-block">
-                                <input type="file" accept=".csv,.json" onChange={handleFileSelect} className="hidden" />
+                                <input type="file" accept=".json" onChange={handleFileSelect} className="hidden" />
                                 <span
                                     className={
                                         'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer inline-block transition'
@@ -257,33 +261,13 @@ const DataUpload: React.FC = () => {
                     </div>
                     <div className="divide-y divide-slate-100">
                         {uploadHistory.map((upload) => (
-                            <div key={upload.id} className="p-6 hover:bg-slate-50 transition">
-                                <div className="flex items-start justify-between mb-3">
+                            <div key={upload} className="p-6 hover:bg-slate-50 transition">
+                                <div className="flex items-start justify-between">
                                     <div className="flex items-center space-x-3">
-                                        {getStatusIcon(upload.status)}
+                                        {getStatusIcon('success')}
                                         <div>
-                                            <p className="font-medium text-slate-800">{upload.filename}</p>
-                                            <p className="text-xs text-slate-500">{upload.uploadedBy}</p>
+                                            <p className="font-medium text-slate-800">{upload}</p>
                                         </div>
-                                    </div>
-                                    <span
-                                        className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                                            upload.status
-                                        )}`}
-                                    >
-                                        {upload.status.toUpperCase()}
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="text-slate-600">Timestamp</p>
-                                        <p className="font-medium text-slate-800">{upload.timestamp}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-600">Records Processed</p>
-                                        <p className="font-medium text-slate-800">
-                                            {upload.records > 0 ? upload.records.toLocaleString() : 'N/A'}
-                                        </p>
                                     </div>
                                 </div>
                             </div>

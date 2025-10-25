@@ -18,11 +18,21 @@ export async function analyzeFlightData(flightData: any) {
   Analyze the following flight data:
   ${JSON.stringify(flightData, null, 2)}
 
+  
+
   Based on the data, provide the following in a JSON format:
-  1. "summary": A concise, one-sentence summary of the overall flight status.
-  2. "status": A single keyword: "normal", "caution", or "critical".
-  3. "anomalies": An array of strings containing concise one-sentence descriptions of any detected anomalies. If none, return an empty array.
-  4. "recommendations": An array of strings with recommended actions or components to inspect. If none, return an empty array.
+  1. "component": Give the name of the component that is detected to potentially be faulty (e.g., "Engine 1", "Hydraulic System").
+  2. "severity": A single keyword describing the severity of this problem: "normal", "caution", or "critical".
+  3. "description": A concise one-sentence description of the specific issue.
+  4. "recommendation": A concise one-sentence recommendation for actions or components to inspect.
+  5. "score": A numerical score from 0 to 100 indicating the health of the aircraft overall (100 = perfect health, 0 = the entire aircraft doesn't work).
+
+  Example:
+  Component: "Engine 1"
+  Severity: "Caution"
+  Description: "Exhaust Gas Temperature trending 15% above normal operating range."
+  Recommendation: "Schedule combustion chamber inspection within next 100 flight hours."
+  Score: 85
 
   Return ONLY the raw JSON object. Do not include markdown formatting like \`\`\`json.
  `;

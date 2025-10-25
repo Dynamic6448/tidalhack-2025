@@ -34,10 +34,11 @@ export const addAircraft = async (data: AircraftType) => {
     return ref.id;
 };
 
-export const logFlightData = async (aircraftId: string, data: any) => {
+export const logFlightData = async (aircraftId: string, data: any, filename: string) => {
     const ref = await db.collection('flightLogs').add({
         aircraftId,
         date: new Date().toISOString(),
+        filename: filename,
         ...data,
     });
     return ref.id;
@@ -79,7 +80,16 @@ router.post('/analyze-flight', async (req, res) => {
         res.status(500).json({ error: 'An unexpected error occurred during AI analysis.' });
     }
 });
-
+router.get('/analyses', async (req, res) => {
+    try {
+        const snapshot = await db.collection('aiAnalyses').get();
+        const analyses = snapshot.docs.map((doc) => doc.data());
+        res.status(200).json({ analyses });
+    } catch (err) {
+        console.error('Error in /analyses route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching analyses.' });
+    }
+});
 router.get('/aircraft', async (req, res) => {
     try {
         const snapshot = await db.collection('aircrafts').get();
@@ -98,6 +108,30 @@ router.post('/aircraft', async (req, res) => {
     } catch (err) {
         console.error('Error in /add-aircraft route:', err);
         res.status(500).json({ error: 'An unexpected error occurred while adding aircraft.' });
+    }
+});
+router.get('/upload', async (req, res) => {
+    try {
+        const snapshot = await db.collection('flightLogs').get();
+        const flightLogs = snapshot.docs.map((doc) => doc.data());
+        res.status(200).json({ flightLogs, filenames: snapshot.docs.map((doc) => doc.data().filename) });
+    } catch (err) {
+        console.error('Error in /upload route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching flight logs.' });
+    }
+});
+router.post('/upload', async (req, res) => {
+    try {
+        const { registration, flightData, filename } = req.body;
+        const flightLogId = await logFlightData(registration, flightData, filename);
+
+        const analysisResult = await analyzeFlightData(flightData);
+        await saveAIAnalysis(registration, analysisResult);
+
+        res.status(200).json({ id: flightLogId });
+    } catch (err) {
+        console.error('Error in /upload route:', err);
+        res.status(500).json({ error: 'An unexpected error occurred while logging flight data.' });
     }
 });
 

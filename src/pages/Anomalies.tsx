@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // pages/Anomalies.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download, Search, FileText, Send } from 'lucide-react';
-import { Pie, Bar } from 'react-chartjs-2';
 import type { Anomaly } from '../types';
 
 const Anomalies: React.FC = () => {
@@ -9,103 +9,50 @@ const Anomalies: React.FC = () => {
     const [severityFilter, setSeverityFilter] = useState<string>('all');
     const [systemFilter, setSystemFilter] = useState<string>('all');
 
-    const anomalies: Anomaly[] = [
-        {
-            id: 'AN001',
-            aircraft: 'AC001',
-            component: 'Engine 1',
-            timestamp: '2024-01-20 14:32:15',
-            severity: 'medium',
-            score: 72,
-            description: 'Exhaust Gas Temperature trending 15% above normal operating range',
-            recommendation: 'Schedule combustion chamber inspection within next 100 flight hours',
-        },
-        {
-            id: 'AN002',
-            aircraft: 'AC003',
-            component: 'Hydraulic System A',
-            timestamp: '2024-01-20 12:18:42',
-            severity: 'high',
-            score: 68,
-            description: 'Pressure drop of 12% detected in primary hydraulic circuit',
-            recommendation: 'Immediate ground inspection required. Check for leaks and seal integrity',
-        },
-        {
-            id: 'AN003',
-            aircraft: 'AC002',
-            component: 'Fuel Flow Sensor',
-            timestamp: '2024-01-20 09:45:33',
-            severity: 'low',
-            score: 85,
-            description: 'Minor fluctuation in fuel flow readings during cruise phase',
-            recommendation: 'Monitor for next 3 flights. Consider sensor calibration if persists',
-        },
-        {
-            id: 'AN004',
-            aircraft: 'AC001',
-            component: 'Engine Vibration',
-            timestamp: '2024-01-19 16:22:11',
-            severity: 'medium',
-            score: 75,
-            description: 'Vibration levels increased by 8% in N1 fan section',
-            recommendation: 'Perform borescope inspection of fan blades at next maintenance',
-        },
-        {
-            id: 'AN005',
-            aircraft: 'AC005',
-            component: 'Electrical Bus',
-            timestamp: '2024-01-19 11:15:28',
-            severity: 'low',
-            score: 88,
-            description: 'Voltage fluctuation within acceptable limits but trending',
-            recommendation: 'Continue monitoring. Review electrical load distribution',
-        },
-    ];
+    const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+    useEffect(() => {
+        const fetchAnomalies = async () => {
+            try {
+                const res = await fetch('http://localhost:3000/api/analyses');
+                if (!res.ok) throw new Error('Failed to fetch anomalies');
+                const data = await res.json();
+                const anomalies: Anomaly[] = [];
+                data.analyses.forEach((analysis: any, index: number) => {
+                    const anomaly: Anomaly = {
+                        response: analysis,
+                        id: `ANOM${(index + 1).toString().padStart(4, '0')}`,
+                        aircraft: `N54321`,
+                    };
+                    anomalies.push(anomaly);
+                });
+                setAnomalies(anomalies);
+                console.log(anomalies);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchAnomalies();
+    }, []);
 
     const filteredAnomalies = anomalies.filter((anomaly) => {
         const matchesSearch =
             anomaly.aircraft.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            anomaly.component.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            anomaly.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesSeverity = severityFilter === 'all' || anomaly.severity === severityFilter;
+            anomaly.response.component.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            anomaly.response.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSeverity = severityFilter === 'all' || anomaly.response.severity === severityFilter;
         const matchesSystem =
-            systemFilter === 'all' || anomaly.component.toLowerCase().includes(systemFilter.toLowerCase());
+            systemFilter === 'all' || anomaly.response.component.toLowerCase().includes(systemFilter.toLowerCase());
         return matchesSearch && matchesSeverity && matchesSystem;
     });
 
-    const severityDistribution = {
-        labels: ['High', 'Medium', 'Low'],
-        datasets: [
-            {
-                data: [
-                    anomalies.filter((a) => a.severity === 'high').length,
-                    anomalies.filter((a) => a.severity === 'medium').length,
-                    anomalies.filter((a) => a.severity === 'low').length,
-                ],
-                backgroundColor: ['#ef4444', '#f97316', '#eab308'],
-            },
-        ],
-    };
-
-    const aircraftDistribution = {
-        labels: ['AC001', 'AC002', 'AC003', 'AC004', 'AC005'],
-        datasets: [
-            {
-                label: 'Anomalies',
-                data: [2, 1, 1, 0, 1],
-                backgroundColor: 'rgba(59, 130, 246, 0.8)',
-            },
-        ],
-    };
-
     const getSeverityColor = (severity: string) => {
-        switch (severity) {
-            case 'high':
+        switch (severity.toLowerCase()) {
+            case 'critical':
                 return 'bg-red-100 text-red-800 border-red-200';
-            case 'medium':
+            case 'caution':
                 return 'bg-orange-100 text-orange-800 border-orange-200';
-            case 'low':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'normal':
+                return 'bg-green-100 text-green-800 border-green-200';
             default:
                 return 'bg-slate-100 text-slate-800 border-slate-200';
         }
@@ -124,7 +71,7 @@ const Anomalies: React.FC = () => {
             </div>
 
             {/* Analytics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
                     <h3 className="text-sm font-medium text-slate-600 mb-4">Severity Distribution</h3>
                     <Pie
@@ -143,7 +90,7 @@ const Anomalies: React.FC = () => {
                         }}
                     />
                 </div>
-            </div>
+            </div> */}
 
             {/* Filters & Search */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -223,16 +170,10 @@ const Anomalies: React.FC = () => {
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    ID
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Aircraft
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Component
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Timestamp
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Severity
@@ -240,43 +181,29 @@ const Anomalies: React.FC = () => {
                                 <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                                     Score
                                 </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                    Action
-                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {filteredAnomalies.map((anomaly) => (
                                 <React.Fragment key={anomaly.id}>
-                                    <tr className="hover:bg-slate-50 cursor-pointer transition">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800">
-                                            {anomaly.id}
-                                        </td>
+                                    <tr>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                                             {anomaly.aircraft}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                            {anomaly.component}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                            {anomaly.timestamp}
+                                            {anomaly.response.component}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
                                                 className={`px-3 py-1 text-xs font-medium rounded-full border ${getSeverityColor(
-                                                    anomaly.severity
+                                                    anomaly.response.severity
                                                 )}`}
                                             >
-                                                {anomaly.severity.toUpperCase()}
+                                                {anomaly.response.severity.toUpperCase()}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-800">
-                                            {anomaly.score}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <button className="text-blue-600 hover:text-blue-800 font-medium">
-                                                View Details
-                                            </button>
+                                            {anomaly.response.score}
                                         </td>
                                     </tr>
                                     <tr className="bg-slate-50">
@@ -286,13 +213,17 @@ const Anomalies: React.FC = () => {
                                                     <p className="text-xs font-medium text-slate-600 mb-1">
                                                         Description
                                                     </p>
-                                                    <p className="text-sm text-slate-800">{anomaly.description}</p>
+                                                    <p className="text-sm text-slate-800">
+                                                        {anomaly.response.description}
+                                                    </p>
                                                 </div>
                                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                                     <p className="text-xs font-medium text-blue-800 mb-1">
                                                         AI-Generated Recommendation
                                                     </p>
-                                                    <p className="text-sm text-blue-700">{anomaly.recommendation}</p>
+                                                    <p className="text-sm text-blue-700">
+                                                        {anomaly.response.recommendation}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </td>
