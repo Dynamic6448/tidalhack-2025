@@ -1,5 +1,5 @@
 // pages/DataUpload.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import type { UploadHistory } from '../types';
 
@@ -7,6 +7,10 @@ const DataUpload: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [aircraftType, setAircraftType] = useState('');
+    const [aircraftId, setAircraftId] = useState('');
+    const [aircraftIdentifiers, setAircraftIdentifiers] = useState<Array<{id: string, identifier: string}>>([]);
+    const [loading, setLoading] = useState(true);
 
     const [uploadHistory] = useState<UploadHistory[]>([
         {
@@ -60,15 +64,51 @@ const DataUpload: React.FC = () => {
         }
     };
 
+    // Add validation function
+    const isFormValid = () => {
+        return aircraftType !== '' && aircraftId !== '' && uploadedFile !== null;
+    };
+
+    // Add useEffect to fetch aircraft identifiers
+    useEffect(() => {
+        const fetchAircraftIdentifiers = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/aircraft-identifiers');
+                if (!response.ok) throw new Error('Failed to fetch aircraft identifiers');
+                const data = await response.json();
+                setAircraftIdentifiers(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAircraftIdentifiers();
+    }, []);
+
+    // Modify handleUpload to include aircraft info
     const handleUpload = async () => {
-        if (!uploadedFile) return;
+        if (!uploadedFile || !isFormValid()) return;
 
         setUploading(true);
-        // Simulate upload
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setUploading(false);
-        alert(`Successfully uploaded ${uploadedFile.name}!`);
-        setUploadedFile(null);
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('aircraftType', aircraftType);
+        formData.append('aircraftId', aircraftId);
+
+        try {
+            // TODO: Replace with actual API endpoint
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            alert(`Successfully uploaded ${uploadedFile.name} for ${aircraftType} (${aircraftId})!`);
+            setUploadedFile(null);
+            setAircraftType('');
+            setAircraftId('');
+        } catch (err) {
+            alert('Upload failed');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const getStatusIcon = (status: string) => {
@@ -105,17 +145,59 @@ const DataUpload: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-                {/* File Upload */}
+                {/* Aircraft Selection */}
+                <div className="bg-white rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                    <h2 className="text-lg font-semibold text-[#3E4A5B] mb-4">Aircraft Details</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-[#3E4A5B] mb-2">
+                                Aircraft Type
+                            </label>
+                            <select
+                                value={aircraftType}
+                                onChange={(e) => setAircraftType(e.target.value)}
+                                className="w-full rounded-lg border border-[#ced1e8] p-2.5 text-[#3E4A5B]"
+                            >
+                                <option value="">Select aircraft type</option>
+                                <option value="787-800">Boeing 787-800</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-[#3E4A5B] mb-2">
+                                Aircraft Identifier
+                            </label>
+                            <select
+                                value={aircraftId}
+                                onChange={(e) => setAircraftId(e.target.value)}
+                                className="w-full rounded-lg border border-[#ced1e8] p-2.5 text-[#3E4A5B]"
+                                disabled={loading || !aircraftType}
+                            >
+                                <option value="">Select identifier</option>
+                                {aircraftIdentifiers.map((aircraft) => (
+                                    <option key={aircraft.id} value={aircraft.identifier}>
+                                        {aircraft.identifier}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* File Upload - modify the existing upload section to be disabled when form is invalid */}
                 <div className="space-y-6">
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                        <h2 className="text-lg font-semibold text-slate-800 mb-4">Upload Telemetry File</h2>
+                    <div className="bg-white rounded-xl p-6 border border-[#ced1e8] shadow-sm">
+                        <h2 className="text-lg font-semibold text-[#3E4A5B] mb-4">Upload Telemetry File</h2>
 
                         <div
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                             className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
-                                isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-slate-400'
+                                !aircraftType || !aircraftId ? 
+                                'border-[#ced1e8] bg-slate-50 opacity-50 cursor-not-allowed' :
+                                isDragging ? 
+                                'border-[#150a82] bg-[#ced1e8]' : 
+                                'border-[#ced1e8] hover:border-[#150a82]'
                             }`}
                         >
                             <Upload
