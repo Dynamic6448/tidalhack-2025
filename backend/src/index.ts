@@ -80,19 +80,6 @@ router.post('/analyze-flight', async (req, res) => {
     }
 });
 
-router.get('/aircraft/:id', async (req, res) => {
-    try {
-        const aircraftId = req.params.id;
-        const doc = await db.collection('aircrafts').doc(aircraftId).get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Aircraft not found' });
-        }
-        res.status(200).json(doc.data());
-    } catch (err) {
-        console.error('Error in /aircraft/:id route:', err);
-        res.status(500).json({ error: 'An unexpected error occurred while fetching aircraft data.' });
-    }
-});
 router.get('/aircraft', async (req, res) => {
     try {
         const snapshot = await db.collection('aircrafts').get();

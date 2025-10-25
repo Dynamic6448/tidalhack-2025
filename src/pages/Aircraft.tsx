@@ -16,7 +16,7 @@ const Aircraft: React.FC = () => {
             try {
                 const response = await fetch('http://localhost:3000/api/aircraft');
                 const data = await response.json();
-                return setAircraft(data.aircrafts);
+                setAircraft(data.aircrafts);
             } catch (error) {
                 console.error('Error fetching aircraft data:', error);
             }

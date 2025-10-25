@@ -1,22 +1,44 @@
 // pages/AircraftDetail.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar, Clock, Activity, AlertTriangle, Wrench } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
-import type { ComponentHealth } from '../types';
+import { type AircraftType, type ComponentHealth } from '../types';
 
 const AircraftDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
-    const [aircraftInfo] = useState({
-        id: id || 'AC001',
-        type: 'Boeing 737-800',
-        tailNumber: 'N12345',
-        totalFlightHours: 24567,
-        flightCycles: 18234,
-        lastMaintenance: '2024-01-15',
-        healthScore: 87,
+    const [activeAnomalies] = useState<number>(0);
+
+    const [aircraftInfo, setAircraftInfo] = useState<AircraftType>({
+        id: '',
+        registration: id || 'N/A',
+        type: '',
+        totalFlightHours: 0,
+        flightCycles: 0,
+        lastMaintenance: '0',
+        skyScore: 0,
+        status: 'normal',
     });
+
+    useEffect(() => {
+        const fetchAircraftIds = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/aircraft');
+                const data = await response.json();
+                return data.aircrafts;
+            } catch (error) {
+                console.error('Error fetching aircraft data:', error);
+            }
+        };
+
+        fetchAircraftIds().then((aircrafts) => {
+            const aircraft = aircrafts.find((a: AircraftType) => a.registration === id);
+            if (aircraft) {
+                setAircraftInfo(aircraft);
+            }
+        });
+    }, []);
 
     const [selectedMetric, setSelectedMetric] = useState<'egt' | 'vibration' | 'fuel'>('egt');
 
@@ -122,14 +144,14 @@ const AircraftDetail: React.FC = () => {
                     <div>
                         <h1 className="text-3xl font-bold text-slate-800">{aircraftInfo.id}</h1>
                         <p className="text-slate-600 mt-1">
-                            {aircraftInfo.type} • {aircraftInfo.tailNumber}
+                            {aircraftInfo.type} • {aircraftInfo.registration}
                         </p>
                     </div>
                     <div className="mt-4 md:mt-0">
                         <div className="flex items-center space-x-2">
-                            <span className="text-sm text-slate-600">Overall Health Score</span>
-                            <span className={`text-4xl font-bold ${getHealthColor(aircraftInfo.healthScore)}`}>
-                                {aircraftInfo.healthScore}
+                            <span className="text-sm text-slate-600">SkyScore</span>
+                            <span className={`text-4xl font-bold ${getHealthColor(aircraftInfo.skyScore)}`}>
+                                {aircraftInfo.skyScore}%
                             </span>
                         </div>
                     </div>
@@ -176,7 +198,7 @@ const AircraftDetail: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs text-slate-600">Active Anomalies</p>
-                            <p className="text-lg font-semibold text-slate-800">3</p>
+                            <p className="text-lg font-semibold text-slate-800">{activeAnomalies}</p>
                         </div>
                     </div>
                 </div>
