@@ -15,6 +15,7 @@ import {
     Legend,
     Filler,
 } from 'chart.js';
+import type { Anomaly, Telemetry } from '../types';
 
 ChartJS.register(
     CategoryScale,
@@ -28,23 +29,6 @@ ChartJS.register(
     Legend,
     Filler
 );
-
-interface Anomaly {
-    id: string;
-    timestamp: string;
-    aircraft: string;
-    component: string;
-    description: string;
-    severity: 'low' | 'medium' | 'high';
-}
-
-interface Telemetry {
-    egt: number;
-    n1: number;
-    n2: number;
-    fuelFlow: number;
-    vibration: number;
-}
 
 const Dashboard: React.FC = () => {
     const [selectedAircraft, setSelectedAircraft] = useState('AC001');
@@ -62,24 +46,30 @@ const Dashboard: React.FC = () => {
             timestamp: '2 mins ago',
             aircraft: 'AC001',
             component: 'Engine 1',
-            description: 'EGT trending above normal',
             severity: 'medium',
+            score: 0,
+            description: 'EGT trending above normal',
+            recommendation: '',
         },
         {
             id: 'AN002',
             timestamp: '15 mins ago',
             aircraft: 'AC003',
             component: 'Hydraulics',
-            description: 'Pressure fluctuation detected',
             severity: 'high',
+            score: 0,
+            description: 'Pressure fluctuation detected',
+            recommendation: '',
         },
         {
             id: 'AN003',
             timestamp: '1 hour ago',
             aircraft: 'AC002',
             component: 'Fuel System',
-            description: 'Minor flow irregularity',
             severity: 'low',
+            score: 0,
+            description: 'Minor flow irregularity',
+            recommendation: '',
         },
     ]);
 

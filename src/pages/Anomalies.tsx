@@ -2,17 +2,7 @@
 import React, { useState } from 'react';
 import { Download, Search, FileText, Send } from 'lucide-react';
 import { Pie, Bar } from 'react-chartjs-2';
-
-interface Anomaly {
-    id: string;
-    aircraft: string;
-    component: string;
-    timestamp: string;
-    severity: 'high' | 'medium' | 'low';
-    score: number;
-    description: string;
-    recommendation: string;
-}
+import type { Anomaly } from '../types';
 
 const Anomalies: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');

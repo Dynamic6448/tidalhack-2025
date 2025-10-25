@@ -69,29 +69,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-[1.02]"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 transform"
                     >
                         Sign In
                     </button>
                 </form>
-
-                <div className="mt-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white text-slate-500">Or</span>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleDemoMode}
-                        className="mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-lg transition duration-200 border border-slate-300"
-                    >
-                        Quick Demo Mode
-                    </button>
-                </div>
+                <button
+                    onClick={handleDemoMode}
+                    className="mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-lg transition duration-200 border border-slate-300"
+                >
+                    Quick Demo Mode
+                </button>
             </div>
         </div>
     );
