@@ -4,7 +4,7 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "concurrently \"npm i && vite\" \"cd backend && npm i && npm run dev\"",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview"
@@ -19,6 +19,7 @@
         "tailwindcss": "^4.1.16"
     },
     "devDependencies": {
+        "concurrently": "^8.2.0",
         "@eslint/js": "^9.36.0",
         "@types/node": "^24.6.0",
         "@types/react": "^19.1.16",

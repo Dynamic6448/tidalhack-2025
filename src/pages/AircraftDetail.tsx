@@ -1,22 +1,44 @@
 // pages/AircraftDetail.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar, Clock, Activity, AlertTriangle, Wrench } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
-import type { ComponentHealth } from '../types';
+import { type AircraftType, type ComponentHealth } from '../types';
 
 const AircraftDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
-    const [aircraftInfo] = useState({
-        id: id || 'AC001',
-        type: 'Boeing 737-800',
-        tailNumber: 'N12345',
-        totalFlightHours: 24567,
-        flightCycles: 18234,
-        lastMaintenance: '2024-01-15',
-        healthScore: 87,
+    const [activeAnomalies] = useState<number>(0);
+
+    const [aircraftInfo, setAircraftInfo] = useState<AircraftType>({
+        id: '',
+        registration: id || 'N/A',
+        type: '',
+        totalFlightHours: 0,
+        flightCycles: 0,
+        lastMaintenance: '0',
+        skyScore: 0,
+        status: 'normal',
     });
+
+    useEffect(() => {
+        const fetchAircraftIds = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/aircraft');
+                const data = await response.json();
+                return data.aircrafts;
+            } catch (error) {
+                console.error('Error fetching aircraft data:', error);
+            }
+        };
+
+        fetchAircraftIds().then((aircrafts) => {
+            const aircraft = aircrafts.find((a: AircraftType) => a.registration === id);
+            if (aircraft) {
+                setAircraftInfo(aircraft);
+            }
+        });
+    }, []);
 
     const [selectedMetric, setSelectedMetric] = useState<'egt' | 'vibration' | 'fuel'>('egt');
 
@@ -122,14 +144,14 @@ const AircraftDetail: React.FC = () => {
                     <div>
                         <h1 className="text-3xl font-bold text-slate-800">{aircraftInfo.id}</h1>
                         <p className="text-slate-600 mt-1">
-                            {aircraftInfo.type} • {aircraftInfo.tailNumber}
+                            {aircraftInfo.type} • {aircraftInfo.registration}
                         </p>
                     </div>
                     <div className="mt-4 md:mt-0">
                         <div className="flex items-center space-x-2">
-                            <span className="text-sm text-slate-600">Overall Health Score</span>
-                            <span className={`text-4xl font-bold ${getHealthColor(aircraftInfo.healthScore)}`}>
-                                {aircraftInfo.healthScore}
+                            <span className="text-sm text-slate-600">SkyScore</span>
+                            <span className={`text-4xl font-bold ${getHealthColor(aircraftInfo.skyScore)}`}>
+                                {aircraftInfo.skyScore}%
                             </span>
                         </div>
                     </div>
@@ -176,7 +198,7 @@ const AircraftDetail: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs text-slate-600">Active Anomalies</p>
-                            <p className="text-lg font-semibold text-slate-800">3</p>
+                            <p className="text-lg font-semibold text-slate-800">{activeAnomalies}</p>
                         </div>
                     </div>
                 </div>
@@ -310,96 +332,6 @@ const AircraftDetail: React.FC = () => {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Aircraft Schematic */}
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h2 className="text-xl font-semibold text-slate-800 mb-6">Aircraft System Overview</h2>
-                <div className="relative bg-gradient-to-b from-slate-50 to-slate-100 rounded-xl p-8 min-h-[300px] flex items-center justify-center">
-                    <div className="relative w-full max-w-3xl">
-                        {/* Simplified aircraft schematic */}
-                        <svg viewBox="0 0 800 300" className="w-full h-auto">
-                            {/* Fuselage */}
-                            <ellipse
-                                cx="400"
-                                cy="150"
-                                rx="200"
-                                ry="50"
-                                fill="#cbd5e1"
-                                stroke="#64748b"
-                                strokeWidth="2"
-                            />
-
-                            {/* Wings */}
-                            <rect
-                                x="200"
-                                y="145"
-                                width="400"
-                                height="10"
-                                fill="#94a3b8"
-                                stroke="#64748b"
-                                strokeWidth="2"
-                            />
-
-                            {/* Engine 1 - Caution */}
-                            <g onClick={() => {}} className="cursor-pointer hover:opacity-80 transition">
-                                <circle cx="250" cy="150" r="30" fill="#fb923c" stroke="#ea580c" strokeWidth="3" />
-                                <text x="250" y="155" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">
-                                    ENG1
-                                </text>
-                                <circle cx="250" cy="120" r="5" fill="#ea580c" className="animate-pulse" />
-                            </g>
-
-                            {/* Engine 2 - Normal */}
-                            <g onClick={() => {}} className="cursor-pointer hover:opacity-80 transition">
-                                <circle cx="550" cy="150" r="30" fill="#22c55e" stroke="#16a34a" strokeWidth="3" />
-                                <text x="550" y="155" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">
-                                    ENG2
-                                </text>
-                            </g>
-
-                            {/* Landing Gear - Critical */}
-                            <g onClick={() => {}} className="cursor-pointer hover:opacity-80 transition">
-                                <rect
-                                    x="385"
-                                    y="200"
-                                    width="30"
-                                    height="40"
-                                    fill="#ef4444"
-                                    stroke="#dc2626"
-                                    strokeWidth="2"
-                                    rx="5"
-                                />
-                                <text x="400" y="225" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">
-                                    GEAR
-                                </text>
-                                <circle cx="430" cy="220" r="5" fill="#dc2626" className="animate-pulse" />
-                            </g>
-
-                            {/* Tail */}
-                            <path
-                                d="M 550 145 L 650 120 L 650 180 L 550 155 Z"
-                                fill="#94a3b8"
-                                stroke="#64748b"
-                                strokeWidth="2"
-                            />
-                        </svg>
-                    </div>
-                </div>
-                <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                        <span className="text-slate-600">Normal</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-                        <span className="text-slate-600">Caution</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                        <span className="text-slate-600">Critical</span>
                     </div>
                 </div>
             </div>
