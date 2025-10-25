@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // pages/DataUpload.tsx
 import React, { useState, useEffect } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
@@ -7,9 +8,9 @@ const DataUpload: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
-    const [aircraftType, setAircraftType] = useState('');
+    const [aircraftType] = useState('Boeing 737-800');
     const [aircraftId, setAircraftId] = useState('');
-    const [aircraftIdentifiers, setAircraftIdentifiers] = useState<Array<{id: string, identifier: string}>>([]);
+    const [aircraftIdentifiers, setAircraftRegistrations] = useState<Array<{ id: string; identifier: string }>>([]);
     const [loading, setLoading] = useState(true);
 
     const [uploadHistory] = useState<UploadHistory[]>([
@@ -73,10 +74,10 @@ const DataUpload: React.FC = () => {
     useEffect(() => {
         const fetchAircraftIdentifiers = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/aircraft-identifiers');
-                if (!response.ok) throw new Error('Failed to fetch aircraft identifiers');
+                const response = await fetch('http://localhost:3000/api/aircraft');
+                if (!response.ok) throw new Error('Failed to fetch aircraft');
                 const data = await response.json();
-                setAircraftIdentifiers(data);
+                setAircraftRegistrations(data.aircrafts.map((ac: any) => ({ id: ac.id, identifier: ac.registration })));
             } catch (err) {
                 console.error(err);
             } finally {
@@ -102,9 +103,8 @@ const DataUpload: React.FC = () => {
             await new Promise((resolve) => setTimeout(resolve, 2000));
             alert(`Successfully uploaded ${uploadedFile.name} for ${aircraftType} (${aircraftId})!`);
             setUploadedFile(null);
-            setAircraftType('');
             setAircraftId('');
-        } catch (err) {
+        } catch {
             alert('Upload failed');
         } finally {
             setUploading(false);
@@ -150,21 +150,17 @@ const DataUpload: React.FC = () => {
                     <h2 className="text-lg font-semibold text-[#3E4A5B] mb-4">Aircraft Details</h2>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-[#3E4A5B] mb-2">
-                                Aircraft Type
-                            </label>
+                            <label className="block text-sm font-medium text-[#3E4A5B] mb-2">Aircraft Type</label>
                             <select
                                 value={aircraftType}
-                                onChange={(e) => setAircraftType(e.target.value)}
                                 className="w-full rounded-lg border border-[#ced1e8] p-2.5 text-[#3E4A5B]"
                             >
-                                <option value="">Select aircraft type</option>
-                                <option value="787-800">Boeing 787-800</option>
+                                <option value="737-800">Boeing 737-800</option>
                             </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-[#3E4A5B] mb-2">
-                                Aircraft Identifier
+                                Aircraft Registration
                             </label>
                             <select
                                 value={aircraftId}
@@ -172,7 +168,7 @@ const DataUpload: React.FC = () => {
                                 className="w-full rounded-lg border border-[#ced1e8] p-2.5 text-[#3E4A5B]"
                                 disabled={loading || !aircraftType}
                             >
-                                <option value="">Select identifier</option>
+                                <option value="">Select registration</option>
                                 {aircraftIdentifiers.map((aircraft) => (
                                     <option key={aircraft.id} value={aircraft.identifier}>
                                         {aircraft.identifier}
@@ -193,11 +189,11 @@ const DataUpload: React.FC = () => {
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                             className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
-                                !aircraftType || !aircraftId ? 
-                                'border-[#ced1e8] bg-slate-50 opacity-50 cursor-not-allowed' :
-                                isDragging ? 
-                                'border-[#150a82] bg-[#ced1e8]' : 
-                                'border-[#ced1e8] hover:border-[#150a82]'
+                                !aircraftType || !aircraftId
+                                    ? 'border-[#ced1e8] bg-slate-50 opacity-50 cursor-not-allowed'
+                                    : isDragging
+                                    ? 'border-[#150a82] bg-[#ced1e8]'
+                                    : 'border-[#ced1e8] hover:border-[#150a82]'
                             }`}
                         >
                             <Upload
@@ -209,7 +205,11 @@ const DataUpload: React.FC = () => {
                             <p className="text-sm text-slate-500 mb-4">Supports CSV, JSON</p>
                             <label className="inline-block">
                                 <input type="file" accept=".csv,.json" onChange={handleFileSelect} className="hidden" />
-                                <span className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer inline-block transition">
+                                <span
+                                    className={
+                                        'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer inline-block transition'
+                                    }
+                                >
                                     Browse Files
                                 </span>
                             </label>
