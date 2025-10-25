@@ -1,21 +1,12 @@
 // pages/DataUpload.tsx
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-
-interface UploadHistory {
-    id: string;
-    filename: string;
-    uploadedBy: string;
-    timestamp: string;
-    records: number;
-    status: 'success' | 'processing' | 'failed';
-}
+import type { UploadHistory } from '../types';
 
 const DataUpload: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
-    const [apiKey, setApiKey] = useState('');
 
     const [uploadHistory] = useState<UploadHistory[]>([
         {
@@ -110,11 +101,10 @@ const DataUpload: React.FC = () => {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-800">Data Upload & Integration</h1>
-                <p className="text-slate-600 mt-1">Upload telemetry data or connect live feeds</p>
+                <h1 className="text-3xl font-bold text-slate-800">Data Upload</h1>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
                 {/* File Upload */}
                 <div className="space-y-6">
                     <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -134,7 +124,7 @@ const DataUpload: React.FC = () => {
                             <p className="text-slate-700 font-medium mb-2">
                                 {uploadedFile ? uploadedFile.name : 'Drag and drop your file here'}
                             </p>
-                            <p className="text-sm text-slate-500 mb-4">Supports CSV, JSON, or telemetry batch files</p>
+                            <p className="text-sm text-slate-500 mb-4">Supports CSV, JSON</p>
                             <label className="inline-block">
                                 <input type="file" accept=".csv,.json" onChange={handleFileSelect} className="hidden" />
                                 <span className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer inline-block transition">
@@ -175,40 +165,6 @@ const DataUpload: React.FC = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
-
-                    {/* API Integration */}
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                        <h2 className="text-lg font-semibold text-slate-800 mb-4">Live Stream Setup</h2>
-                        <p className="text-sm text-slate-600 mb-4">
-                            Connect to real-time telemetry feeds using API integration
-                        </p>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">API Key</label>
-                                <input
-                                    type="password"
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder="Enter your API key"
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Stream Endpoint</label>
-                                <input
-                                    type="text"
-                                    placeholder="wss://telemetry.aerologiq.com/stream"
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            <button className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
-                                Connect Live Stream
-                            </button>
-                        </div>
                     </div>
                 </div>
 

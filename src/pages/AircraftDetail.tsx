@@ -3,12 +3,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar, Clock, Activity, AlertTriangle, Wrench } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
-
-interface ComponentHealth {
-    name: string;
-    status: 'normal' | 'caution' | 'critical';
-    score: number;
-}
+import type { ComponentHealth } from '../types';
 
 const AircraftDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();

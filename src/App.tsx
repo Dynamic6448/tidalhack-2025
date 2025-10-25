@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import AircraftDetail from './pages/AircraftDetail';
 import Anomalies from './pages/Anomalies';
 import DataUpload from './pages/DataUpload';
-import Settings from './pages/Settings';
 import Layout from './components/Layout';
 
 function App() {
@@ -35,7 +34,6 @@ function App() {
                                     <Route path="/aircraft/:id" element={<AircraftDetail />} />
                                     <Route path="/anomalies" element={<Anomalies />} />
                                     <Route path="/upload" element={<DataUpload />} />
-                                    <Route path="/settings" element={<Settings />} />
                                     <Route path="/" element={<Navigate to="/dashboard" />} />
                                 </Routes>
                             </Layout>

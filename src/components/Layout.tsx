@@ -1,7 +1,7 @@
 // components/Layout.tsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Plane, AlertTriangle, Upload, Settings as SettingsIcon, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Plane, AlertTriangle, Upload, Menu, X } from 'lucide-react';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -16,7 +16,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         { path: '/aircraft/AC001', icon: Plane, label: 'Aircraft' },
         { path: '/anomalies', icon: AlertTriangle, label: 'Anomalies' },
         { path: '/upload', icon: Upload, label: 'Upload' },
-        { path: '/settings', icon: SettingsIcon, label: 'Settings' },
     ];
 
     return (
@@ -36,11 +35,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 <div className="bg-blue-600 p-2 rounded-lg">
                                     <Plane className="w-6 h-6 text-white" />
                                 </div>
-                                <span className="ml-3 text-xl font-bold text-slate-800">AeroLogIQ</span>
+                                <span className="ml-3 text-xl font-bold text-slate-800">SkyLog</span>
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <div className="hidden sm:block text-sm text-slate-600">v1.0.0 | Team AeroLogIQ</div>
+                            <div className="hidden sm:block text-sm text-slate-600">v1.0.0</div>
                         </div>
                     </div>
                 </div>
